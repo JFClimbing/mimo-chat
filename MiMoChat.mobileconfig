@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>FullScreen</key>
+			<true/>
+			<key>Icon</key>
+			<data>
+			iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwvBnAAAABGdBTUEAALGPC/xhBQAA
+			ADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAADKADAAQAAAAB
+			AAAADAAAAAB1U0IrAAABfklEQVR4Ae3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAA
+			AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+			AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODPAD
+			8YAAGhMDAYAAAAASUVORK5CYII=
+			</data>
+			<key>IsRemovable</key>
+			<true/>
+			<key>Label</key>
+			<string>MiMo Chat</string>
+			<key>PayloadDescription</key>
+			<string>添加 MiMo Chat 到主屏幕</string>
+			<key>PayloadDisplayName</key>
+			<string>MiMo Chat</string>
+			<key>PayloadIdentifier</key>
+			<string>com.mimochat.webclip</string>
+			<key>PayloadType</key>
+			<string>com.apple.webClip.managed</string>
+			<key>PayloadUUID</key>
+			<string>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>URL</key>
+			<string>https://jfclimbing.github.io/mimo-chat/</string>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>安装后将在主屏幕添加 MiMo Chat 应用图标</string>
+	<key>PayloadDisplayName</key>
+	<string>MiMo Chat</string>
+	<key>PayloadIdentifier</key>
+	<string>com.mimochat.profile</string>
+	<key>PayloadOrganization</key>
+	<string>MiMo Chat</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>12345678-9ABC-DEF0-1234-567890ABCDEF</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<key>ConsentText</key>
+	<dict>
+		<key>default</key>
+		<string>此配置文件将添加 MiMo Chat 到您的主屏幕。仅供个人使用。</string>
+	</dict>
+</dict>
+</plist>
