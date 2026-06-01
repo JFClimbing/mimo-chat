@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MiMo Chat">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="manifest.json">
+<title>MiMo Chat</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --accent:#6c5ce7;--accent2:#a29bfe;--accent3:#fd79a8;
+  --text:#f0f0f5;--text2:#8888a0;--text3:#555570;
+  --bubble-u:linear-gradient(135deg,#6c5ce7,#a29bfe);
+  --bubble-a:#1a1a26;
+  --radius:20px;--radius-s:12px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --header-h:calc(52px + var(--safe-t));
+}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  color:var(--text);display:flex;flex-direction:column;
+}
+
+/* Header */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,10,15,0.85);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:0.5px solid rgba(255,255,255,0.06);
+  padding:var(--safe-t) 16px 0;
+  flex-shrink:0;
+}
+.header-inner{
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+}
+.header-inner h1{font-size:17px;font-weight:700;letter-spacing:-0.3px}
+.hdr-btn{
+  width:36px;height:36px;border:none;background:rgba(255,255,255,0.06);
+  border-radius:50%;color:var(--accent2);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;
+}
+.hdr-btn:active{background:rgba(255,255,255,0.12)}
+
+/* Chat */
+#chat{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 12px 8px;
+}
+.msg{display:flex;margin-bottom:14px;animation:fadeIn 0.3s ease}
+.msg.user{justify-content:flex-end}
+.msg.ai{justify-content:flex-start}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.bubble{
+  max-width:82%;padding:11px 15px;border-radius:var(--radius);
+  font-size:15px;line-height:1.55;word-break:break-word;
+  position:relative;
+}
+.msg.user .bubble{
+  background:var(--bubble-u);color:#fff;
+  border-bottom-right-radius:6px;
+}
+.msg.ai .bubble{
+  background:var(--bubble-a);color:var(--text);
+  border-bottom-left-radius:6px;
+  border:0.5px solid rgba(255,255,255,0.05);
+}
+.msg .meta{font-size:10px;color:var(--text3);margin-top:3px;padding:0 6px}
+.msg.user .meta{text-align:right}
+
+/* Typing */
+.typing{display:flex;gap:5px;padding:4px 0}
+.typing span{
+  width:6px;height:6px;border-radius:50%;background:var(--accent2);
+  animation:bounce 1.4s infinite;
+}
+.typing span:nth-child(2){animation-delay:0.15s}
+.typing span:nth-child(3){animation-delay:0.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-6px);opacity:1}}
+
+/* Welcome */
+.welcome{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;height:100%;text-align:center;
+  padding:40px 24px;
+}
+.welcome .logo{
+  width:80px;height:80px;border-radius:24px;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin-bottom:20px;
+  box-shadow:0 8px 32px rgba(108,92,231,0.3);
+}
+.welcome h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.welcome p{font-size:14px;color:var(--text2);line-height:1.6}
+.welcome .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;justify-content:center}
+.welcome .chip{
+  padding:8px 16px;background:var(--bg3);border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:20px;font-size:13px;color:var(--text2);cursor:pointer;
+  transition:all 0.2s;
+}
+.welcome .chip:active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Input */
+#input-area{
+  flex-shrink:0;
+  background:rgba(10,10,15,0.9);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border-top:0.5px solid rgba(255,255,255,0.06);
+  padding:8px 12px calc(8px + var(--safe-b));
+}
+.input-wrap{
+  display:flex;align-items:flex-end;gap:8px;
+  background:var(--bg3);border-radius:24px;padding:4px 4px 4px 16px;
+  border:0.5px solid rgba(255,255,255,0.08);
+}
+#msg-input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:16px;line-height:1.4;
+  padding:8px 0;max-height:120px;min-height:24px;
+  resize:none;font-family:inherit;
+}
+#msg-input::placeholder{color:var(--text3)}
+#send-btn{
+  width:36px;height:36px;border:none;cursor:pointer;flex-shrink:0;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#fff;font-size:16px;
+  transition:all 0.2s;opacity:0.4;
+}
+#send-btn.active{opacity:1}
+#send-btn:active{transform:scale(0.9)}
+
+/* Sidebar */
+.sidebar-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  z-index:80;opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.sidebar-overlay.open{opacity:1;pointer-events:auto}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:280px;
+  background:var(--bg2);z-index:81;
+  transform:translateX(-100%);transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  display:flex;flex-direction:column;padding-top:var(--safe-t);
+}
+.sidebar.open{transform:translateX(0)}
+.sb-header{
+  padding:16px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:0.5px solid rgba(255,255,255,0.06);
+}
+.sb-header h3{font-size:16px;font-weight:600}
+.sb-new{
+  padding:6px 14px;border-radius:16px;border:none;
+  background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
+#conv-list{flex:1;overflow-y:auto;padding:8px}
+.conv{
+  padding:12px 14px;border-radius:var(--radius-s);cursor:pointer;
+  margin-bottom:2px;display:flex;align-items:center;gap:10px;
+  transition:background 0.15s;
+}
+.conv:active,.conv.active{background:rgba(255,255,255,0.06)}
+.conv .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.conv .title{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv .del{
+  width:28px;height:28px;border:none;background:none;
+  color:var(--text3);font-size:16px;cursor:pointer;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.conv .del:active{background:rgba(255,0,0,0.15);color:var(--accent3)}
+.sb-footer{
+  padding:12px 16px;border-top:0.5px solid rgba(255,255,255,0.06);
+}
+.sb-settings{
+  width:100%;padding:10px;border-radius:var(--radius-s);
+  border:0.5px solid rgba(255,255,255,0.08);background:transparent;
+  color:var(--text2);font-size:14px;cursor:pointer;
+}
+.sb-settings:active{background:rgba(255,255,255,0.06)}
+
+/* Modal */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  z-index:100;display:none;align-items:flex-end;justify-content:center;
+}
+.modal-bg.active{display:flex}
+.modal{
+  background:var(--bg2);width:100%;max-width:500px;
+  border-radius:20px 20px 0 0;padding:24px 20px calc(24px + var(--safe-b));
+  max-height:85vh;overflow-y:auto;
+  animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:20px;text-align:center}
+.modal label{
+  display:block;font-size:12px;color:var(--text2);
+  margin:16px 0 6px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.modal input,.modal select{
+  width:100%;background:var(--bg3);border:0.5px solid rgba(255,255,255,0.08);
+  border-radius:var(--radius-s);padding:12px 14px;
+  color:var(--text);font-size:15px;outline:none;
+  transition:border-color 0.2s;
+}
+.modal input:focus,.modal select:focus{border-color:var(--accent)}
+.modal select{-webkit-appearance:none;appearance:none}
+.modal .btns{display:flex;gap:10px;margin-top:24px}
+.modal .btns button{
+  flex:1;padding:14px;border-radius:var(--radius-s);
+  border:none;font-size:15px;font-weight:600;cursor:pointer;
+}
+.btn-ok{background:var(--accent);color:#fff}
+.btn-no{background:rgba(255,255,255,0.06);color:var(--text)}
+
+/* Markdown */
+.bubble code{
+  background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;
+  font-size:13px;font-family:"SF Mono",Menlo,monospace;
+}
+.bubble pre{
+  background:rgba(0,0,0,0.35);padding:12px;border-radius:var(--radius-s);
+  overflow-x:auto;margin:8px 0;-webkit-overflow-scrolling:touch;
+}
+.bubble pre code{background:none;padding:0}
+.bubble strong{color:var(--accent2)}
+.bubble em{color:var(--accent3);font-style:italic}
+.bubble a{color:var(--accent2)}
+
+/* Stop btn */
+#stop-btn{
+  display:none;margin:8px auto 0;padding:6px 20px;
+  border-radius:20px;border:0.5px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);color:var(--text2);
+  font-size:13px;cursor:pointer;
+}
+#stop-btn:active{background:rgba(255,0,0,0.15);color:var(--accent3)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <button class="hdr-btn" onclick="toggleSidebar()">☰</button>
+    <h1>MiMo Chat</h1>
+    <button class="hdr-btn" onclick="openSettings()">⚙</button>
+  </div>
+</header>
+
+<div id="chat"></div>
+
+<div id="input-area">
+  <div class="input-wrap">
+    <textarea id="msg-input" rows="1" placeholder="输入消息..."></textarea>
+    <button id="send-btn" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sb-header">
+    <h3>对话</h3>
+    <button class="sb-new" onclick="newConv()">+ 新建</button>
+  </div>
+  <div id="conv-list"></div>
+  <div class="sb-footer">
+    <button class="sb-settings" onclick="openSettings()">⚙ 设置</button>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h2>设置</h2>
+    <label>API 地址</label>
+    <input type="text" id="s-url">
+    <label>API Key</label>
+    <input type="password" id="s-key">
+    <label>模型</label>
+    <select id="s-model">
+      <option value="mimo-v2.5-pro">mimo-v2.5-pro（推荐）</option>
+      <option value="mimo-v2.5">mimo-v2.5</option>
+      <option value="mimo-v2-pro">mimo-v2-pro</option>
+      <option value="mimo-v2-omni">mimo-v2-omni</option>
+    </select>
+    <label>系统提示词</label>
+    <input type="text" id="s-sys" placeholder="你是一个有用的AI助手">
+    <label>流式输出</label>
+    <select id="s-stream">
+      <option value="1">开启</option>
+      <option value="0">关闭</option>
+    </select>
+    <div class="btns">
+      <button class="btn-no" onclick="closeSettings()">取消</button>
+      <button class="btn-ok" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEF={apiUrl:'https://token-plan-cn.xiaomimimo.com/v1',apiKey:'',model:'mimo-v2.5-pro',sys:'你是一个有用的AI助手，用中文回答。',stream:true};
+let cfg={},convs=[],cid=null,busy=false,ctrl=null;
+
+const $=s=>document.getElementById(s);
+const now=()=>new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+
+function loadCfg(){const s=localStorage.getItem('mc-cfg');cfg=s?{...DEF,...JSON.parse(s)}:{...DEF}}
+function saveCfg(){localStorage.setItem('mc-cfg',JSON.stringify(cfg))}
+function loadConvs(){const s=localStorage.getItem('mc-c');convs=s?JSON.parse(s):[];if(!convs.length)newConv()}
+function saveConvs(){localStorage.setItem('mc-c',JSON.stringify(convs))}
+function cur(){return convs.find(c=>c.id===cid)}
+
+function newConv(){
+  const c={id:Date.now()+'',title:'新对话',msgs:[]};
+  convs.unshift(c);cid=c.id;saveConvs();render();renderList();toggleSidebar();
+}
+function switchConv(id){cid=id;render();renderList();toggleSidebar()}
+function delConv(id,e){
+  e.stopPropagation();convs=convs.filter(c=>c.id!==id);
+  if(cid===id){cid=convs[0]?.id||null;if(!cid)newConv()}
+  saveConvs();render();renderList();
+}
+function renderList(){
+  $('conv-list').innerHTML=convs.map(c=>`
+    <div class="conv ${c.id===cid?'active':''}" onclick="switchConv('${c.id}')">
+      <span class="dot"></span><span class="title">${esc(c.title)}</span>
+      <button class="del" onclick="delConv('${c.id}',event)">×</button>
+    </div>`).join('');
+}
+function toggleSidebar(){
+  const o=$('sb-overlay'),s=$('sidebar');
+  s.classList.toggle('open');o.classList.toggle('open');
+}
+
+function openSettings(){
+  $('s-url').value=cfg.apiUrl;$('s-key').value=cfg.apiKey;
+  $('s-model').value=cfg.model;$('s-sys').value=cfg.sys;
+  $('s-stream').value=cfg.stream?'1':'0';
+  $('modal-bg').classList.add('active');
+}
+function closeSettings(){$('modal-bg').classList.remove('active')}
+function saveSettings(){
+  cfg.apiUrl=$('s-url').value.trim();cfg.apiKey=$('s-key').value.trim();
+  cfg.model=$('s-model').value;cfg.sys=$('s-sys').value;
+  cfg.stream=$('s-stream').value==='1';saveCfg();closeSettings();
+}
+
+function md(t){
+  let h=esc(t);
+  h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>');
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+
+function render(){
+  const el=$('chat'),c=cur();
+  if(!c||!c.msgs.length){
+    el.innerHTML=`<div class="welcome">
+      <div class="logo">🤖</div><h2>MiMo Chat</h2>
+      <p>小米大模型 · 智能对话</p>
+      <div class="chips">
+        <div class="chip" onclick="quickSend('你好')">👋 打个招呼</div>
+        <div class="chip" onclick="quickSend('帮我写一段Python代码')">💻 写代码</div>
+        <div class="chip" onclick="quickSend('解释一下量子计算')">🔬 学知识</div>
+        <div class="chip" onclick="quickSend('用中文写一首诗')">✍️ 写首诗</div>
+      </div></div>`;
+    return;
+  }
+  el.innerHTML=c.msgs.map(m=>`
+    <div class="msg ${m.r}">
+      <div class="bubble">${m.r==='ai'?md(m.t):esc(m.t)}</div>
+      <div class="meta">${m.ts}</div>
+    </div>`).join('')+`<div id="stop" style="display:none;text-align:center;padding:8px">
+      <button id="stop-btn" onclick="stopGen()" style="display:inline-block;
+      padding:6px 20px;border-radius:20px;border:0.5px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04);color:#888;font-size:13px;cursor:pointer">停止生成</button></div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+function addMsg(r,t){
+  const c=cur();if(!c)return;
+  c.msgs.push({r,t,ts:now()});
+  if(c.msgs.length===1&&r==='user')c.title=t.slice(0,30);
+  saveConvs();renderList();
+}
+function updLast(t){
+  const c=cur();if(!c)return;
+  const m=c.msgs;if(m.length&&m[m.length-1].r==='ai'){m[m.length-1].t=t}
+  saveConvs();
+}
+
+function quickSend(t){$('msg-input').value=t;sendMessage()}
+
+async function sendMessage(){
+  const input=$('msg-input'),text=input.value.trim();
+  if(!text||busy)return;
+  if(!cfg.apiKey){openSettings();return}
+  input.value='';input.style.height='auto';$('send-btn').classList.remove('active');
+
+  addMsg('user',text);
+  const c=cur();
+  const msgs=[];
+  if(cfg.sys)msgs.push({role:'system',content:cfg.sys});
+  c.msgs.forEach(m=>msgs.push({role:m.r==='ai'?'assistant':'user',content:m.t}));
+
+  render();busy=true;
+  const stopEl=$('stop');if(stopEl)stopEl.style.display='block';
+
+  addMsg('ai','');
+  const el=$('chat');
+  el.innerHTML+=`<div id="typing" class="msg ai"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
+  el.scrollTop=el.scrollHeight;
+
+  try{
+    ctrl=new AbortController();
+    if(cfg.stream){
+      const res=await fetch(cfg.apiUrl+'/chat/completions',{
+        method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+        body:JSON.stringify({model:cfg.model,messages:msgs,stream:true}),signal:ctrl.signal
+      });
+      if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'HTTP '+res.status)}
+      const reader=res.body.getReader(),dec=new TextDecoder();
+      let txt='',buf='';
+      while(true){
+        const{done,value}=await reader.read();if(done)break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split('\n');buf=lines.pop();
+        for(const ln of lines){
+          const tr=ln.trim();if(!tr||!tr.startsWith('data:'))continue;
+          const d=tr.slice(5).trim();if(d==='[DONE]')continue;
+          try{const j=JSON.parse(d);const dt=j.choices?.[0]?.delta?.content;
+          if(dt){txt+=dt;updLast(txt);const tp=$('typing');if(tp)tp.remove();render()}}catch(e){}
+        }
+      }
+    }else{
+      const res=await fetch(cfg.apiUrl+'/chat/completions',{
+        method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+        body:JSON.stringify({model:cfg.model,messages:msgs,stream:false}),signal:ctrl.signal
+      });
+      if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'HTTP '+res.status)}
+      const j=await res.json();updLast(j.choices?.[0]?.message?.content||'无响应');
+    }
+    const tp=$('typing');if(tp)tp.remove();render();
+  }catch(e){
+    if(e.name==='AbortError'){const tp=$('typing');if(tp)tp.remove();render();return}
+    const tp=$('typing');if(tp)tp.remove();
+    updLast('❌ '+e.message);render();
+  }finally{busy=false;ctrl=null;const s=$('stop');if(s)s.style.display='none'}
+}
+function stopGen(){if(ctrl)ctrl.abort()}
+
+const inp=$('msg-input');
+inp.addEventListener('input',()=>{
+  inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,120)+'px';
+  $('send-btn').classList.toggle('active',!!inp.value.trim());
+});
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+
+loadCfg();loadConvs();render();renderList();
+if(!cfg.apiKey)setTimeout(openSettings,500);
+</script>
+</body>
+</html>
